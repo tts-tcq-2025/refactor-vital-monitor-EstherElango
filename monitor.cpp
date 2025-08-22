@@ -12,12 +12,10 @@ struct VitalThreshold {
     float max;
 };
 
-// ✅ Pure function (testable without I/O)
 bool isVitalNormal(float value, VitalThreshold threshold) {
     return value >= threshold.min && value <= threshold.max;
 }
 
-// ✅ I/O function separated from logic
 void blinkAlert(const std::string& message) {
     cout << message << "\n";
     for (int i = 0; i < 6; i++) {
@@ -28,11 +26,10 @@ void blinkAlert(const std::string& message) {
     }
 }
 
-// ✅ Wrapper to check vitals
 int vitalsOk(float temperature, float pulseRate, float spo2) {
     VitalThreshold tempRange  = {95, 102};
     VitalThreshold pulseRange = {60, 100};
-    VitalThreshold spo2Range  = {90, 100}; // upper bound added for clarity
+    VitalThreshold spo2Range  = {90, 100}; 
 
     if(!isVitalNormal(temperature, tempRange)) {
         blinkAlert("Temperature is critical!");
@@ -49,40 +46,39 @@ int vitalsOk(float temperature, float pulseRate, float spo2) {
     return 1;
 }
 
-// ✅ Strong tests
+
 void testVitals() {
     cout << "\nVitals test\n";
 
     // Normal case
     assert(vitalsOk(98.6, 72, 95) == 1);
 
-    // Temperature tests
-    assert(isVitalNormal(94.9, {95,102}) == false);  // below min
-    assert(isVitalNormal(95,   {95,102}) == true);   // boundary
-    assert(isVitalNormal(102,  {95,102}) == true);   // boundary
-    assert(isVitalNormal(102.1,{95,102}) == false);  // above max
 
-    // Pulse tests
-    assert(isVitalNormal(59,   {60,100}) == false);  // below min
-    assert(isVitalNormal(60,   {60,100}) == true);   // boundary
-    assert(isVitalNormal(100,  {60,100}) == true);   // boundary
-    assert(isVitalNormal(101,  {60,100}) == false);  // above max
+    assert(isVitalNormal(94.9, {95,102}) == false);  
+    assert(isVitalNormal(95,   {95,102}) == true);   
+    assert(isVitalNormal(102,  {95,102}) == true);  
+    assert(isVitalNormal(102.1,{95,102}) == false); 
 
-    // SpO2 tests
-    assert(isVitalNormal(89,   {90,100}) == false);  // below min
-    assert(isVitalNormal(90,   {90,100}) == true);   // boundary
-    assert(isVitalNormal(100,  {90,100}) == true);   // boundary
+    assert(isVitalNormal(59,   {60,100}) == false); 
+    assert(isVitalNormal(60,   {60,100}) == true);  
+    assert(isVitalNormal(100,  {60,100}) == true);  
+    assert(isVitalNormal(101,  {60,100}) == false); 
 
-    // Integration tests
-    assert(vitalsOk(94, 72, 95)   == 0); // temp fail
-    assert(vitalsOk(98.6, 55, 95) == 0); // pulse fail
-    assert(vitalsOk(98.6, 72, 85) == 0); // spo2 fail
-    assert(vitalsOk(94, 55, 85)   == 0); // multiple fail
+   
+    assert(isVitalNormal(89,   {90,100}) == false); 
+    assert(isVitalNormal(90,   {90,100}) == true);   
+    assert(isVitalNormal(100,  {90,100}) == true);   
+
+
+    assert(vitalsOk(94, 72, 95)   == 0); 
+    assert(vitalsOk(98.6, 55, 95) == 0); 
+    assert(vitalsOk(98.6, 72, 85) == 0); 
+    assert(vitalsOk(94, 55, 85)   == 0); 
 
     cout << "All vital tests executed successfully (failures expose bugs)\n";
 }
 
-// ✅ Main entry point
+
 int main() {
     testVitals();
     return 0;
