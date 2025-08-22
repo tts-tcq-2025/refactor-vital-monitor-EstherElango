@@ -1,38 +1,27 @@
-#include "./monitor.h"
-#include <assert.h>
-#include <thread>
-#include <chrono>
-#include <iostream>
-using std::cout, std::flush, std::this_thread::sleep_for, std::chrono::seconds;
+#include "monitor.h"
 
-int vitalsOk(float temperature, float pulseRate, float spo2) {
-  if (temperature > 102 || temperature < 95) {
-    cout << "Temperature is critical!\n";
-    for (int i = 0; i < 6; i++) {
-      cout << "\r* " << flush;
-      sleep_for(seconds(1));
-      cout << "\r *" << flush;
-      sleep_for(seconds(1));
+// Constructor: initialize thresholds for vitals
+Monitor::Monitor() {
+    thresholds["temperature"] = {95, 102};
+    thresholds["pulseRate"]   = {60, 100};
+    thresholds["spo2"]        = {90, 100};
+}
+
+// Generic check for any vital
+bool Monitor::isVitalNormal(const std::string& vitalName, float value) const {
+    auto it = thresholds.find(vitalName);
+    if (it == thresholds.end()) {
+        // Unknown vital → treat as OK for now
+        return true;
     }
-    return 0;
-  } else if (pulseRate < 60 || pulseRate > 100) {
-    cout << "Pulse Rate is out of range!\n";
-    for (int i = 0; i < 6; i++) {
-      cout << "\r* " << flush;
-      sleep_for(seconds(1));
-      cout << "\r *" << flush;
-      sleep_for(seconds(1));
-    }
-    return 0;
-  } else if (spo2 < 90) {
-    cout << "Oxygen Saturation out of range!\n";
-    for (int i = 0; i < 6; i++) {
-      cout << "\r* " << flush;
-      sleep_for(seconds(1));
-      cout << "\r *" << flush;
-      sleep_for(seconds(1));
-    }
-    return 0;
-  }
-  return 1;
+    const VitalThreshold& t = it->second;
+    return value >= t.min && value <= t.max;
+}
+
+// Check if all standard vitals are within range
+bool Monitor::vitalsOk(float temperature, float pulseRate, float spo2) const {
+    if (!isVitalNormal("temperature", temperature)) return false;
+    if (!isVitalNormal("pulseRate",   pulseRate))   return false;
+    if (!isVitalNormal("spo2",        spo2))        return false;
+    return true;
 }
